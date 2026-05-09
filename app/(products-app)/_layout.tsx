@@ -1,10 +1,14 @@
+import LogOutIconButton from "@/presentation/auth/components/LogOutIconButton";
 import { useAuthStore } from "@/presentation/auth/store/useAuthStore";
+import { useThemeColor } from "@/presentation/theme/hooks/use-theme-color";
 import { Redirect, Stack } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 const CheckAuthenticationLayout = () => {
   const { status, checkStatus } = useAuthStore();
+
+  const backgroundColor = useThemeColor({}, "background");
 
   useEffect(() => {
     checkStatus();
@@ -25,13 +29,24 @@ const CheckAuthenticationLayout = () => {
     );
   }
 
-  if (status === "authenticated") {
-    return <Redirect href="/auth/login/index" />;
+  if (status === "unauthenticated") {
+    return <Redirect href="/auth/login" />;
   }
 
+  console.log("status", status);
   return (
-    <Stack>
-      <Stack.Screen name="(home)/index" options={{ title: "Productos" }} />
+    <Stack
+      screenOptions={{
+        headerShadowVisible: false,
+        headerStyle: {
+          backgroundColor: backgroundColor,
+        },
+      }}
+    >
+      <Stack.Screen
+        name="(home)/index"
+        options={{ title: "Productos", headerLeft: () => <LogOutIconButton /> }}
+      />
     </Stack>
   );
 };
