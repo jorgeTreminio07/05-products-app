@@ -1,16 +1,23 @@
+import ProductImages from "@/presentation/products/components/productImages";
+import { useProduct } from "@/presentation/products/hooks/useProducts";
+import ThemedButton from "@/presentation/theme/components/themed-button";
 import { ThemedView } from "@/presentation/theme/components/themed-view";
+import ThemedButtomGroup from "@/presentation/theme/components/ThemedButtomGroup";
 import ThemedTextInput from "@/presentation/theme/components/themedTextInput";
 import { useThemeColor } from "@/presentation/theme/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "expo-router";
+import { Redirect, useLocalSearchParams, useNavigation } from "expo-router";
 import React, { useEffect } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View } from "react-native-reanimated/lib/typescript/Animated";
 
 const ProductScreen = () => {
+  const { id } = useLocalSearchParams();
   const navigation = useNavigation();
   const backgroundColor = useThemeColor({}, "background");
+
+  const { productQuery } = useProduct(`${id}`);
   useEffect(() => {
-    //colocar el nombre del producto en el header
     navigation.setOptions({
       headerRight: () => (
         <Ionicons
@@ -22,6 +29,33 @@ const ProductScreen = () => {
       ),
     });
   }, []);
+
+  useEffect(() => {
+    if (productQuery.data) {
+      navigation.setOptions({
+        title: productQuery.data.title,
+      });
+    }
+  }, [productQuery.data]);
+
+  if (productQuery.isLoading) {
+    return (
+      <ThemedView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <Ionicons name="cloud-download-outline" size={50} color={"white"} />
+      </ThemedView>
+    );
+  }
+
+  if (!productQuery.data) {
+    return <Redirect href="/(products-app)/(home)" />;
+  }
+
+  const product = productQuery.data!;
+
+  console.log("product", product);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -29,6 +63,7 @@ const ProductScreen = () => {
     >
       <ScrollView>
         {/* Product images */}
+        <ProductImages images={product.images} />
 
         <ThemedView style={{ marginHorizontal: 10, marginTop: 20 }}>
           <ThemedTextInput placeholder="Titulo" style={{ marginVertical: 5 }} />
@@ -52,6 +87,29 @@ const ProductScreen = () => {
           <ThemedTextInput placeholder="Precio" style={{ flex: 1 }} />
           <ThemedTextInput placeholder="Inventario" style={{ flex: 1 }} />
         </ThemedView>
+
+        <ThemedView style={{ marginHorizontal: 10 }}>
+          <ThemedButtomGroup
+            options={["XS", "S", "M", "L", "XL", "XXL"]}
+            selectedOption={product.sizes}
+            onSelect={(option) => console.log({ option })}
+          />
+
+          <ThemedButtomGroup
+            options={["kid", "men", "women", "unisex"]}
+            selectedOption={[product.gender]}
+            onSelect={(option) => console.log({ option })}
+          />
+        </ThemedView>
+
+        <View style={{ marginHorizontal: 10, marginBottom: 50, marginTop: 20 }}>
+          <ThemedButton
+            icon="save-outline"
+            onPress={() => console.log("guardar")}
+          >
+            Guardar
+          </ThemedButton>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
