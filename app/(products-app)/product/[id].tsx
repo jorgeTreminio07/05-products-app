@@ -1,3 +1,4 @@
+import { Size } from "@/core/products/interfaces/product.interface";
 import ProductImages from "@/presentation/products/components/productImages";
 import { useProduct } from "@/presentation/products/hooks/useProducts";
 import ThemedButton from "@/presentation/theme/components/themed-button";
@@ -7,7 +8,8 @@ import ThemedTextInput from "@/presentation/theme/components/themedTextInput";
 import { useThemeColor } from "@/presentation/theme/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, useLocalSearchParams, useNavigation } from "expo-router";
-import React, { useEffect } from "react";
+import { Formik } from "formik";
+import { useEffect } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { View } from "react-native-reanimated/lib/typescript/Animated";
 
@@ -57,61 +59,101 @@ const ProductScreen = () => {
   console.log("product", product);
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ backgroundColor: backgroundColor, flex: 1 }}
+    <Formik
+      initialValues={product}
+      onSubmit={(productLike) => console.log({ productLike })}
     >
-      <ScrollView>
-        {/* Product images */}
-        <ProductImages images={product.images} />
-
-        <ThemedView style={{ marginHorizontal: 10, marginTop: 20 }}>
-          <ThemedTextInput placeholder="Titulo" style={{ marginVertical: 5 }} />
-          <ThemedTextInput placeholder="Slug" style={{ marginVertical: 5 }} />
-          <ThemedTextInput
-            placeholder="Descripcion"
-            multiline
-            numberOfLines={5}
-            style={{ marginVertical: 5 }}
-          />
-        </ThemedView>
-
-        <ThemedView
-          style={{
-            marginHorizontal: 10,
-            marginVertical: 5,
-            flexDirection: "row",
-            gap: 10,
-          }}
+      {({ values, handleSubmit, handleChange, setFieldValue }) => (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ backgroundColor: backgroundColor, flex: 1 }}
         >
-          <ThemedTextInput placeholder="Precio" style={{ flex: 1 }} />
-          <ThemedTextInput placeholder="Inventario" style={{ flex: 1 }} />
-        </ThemedView>
+          <ScrollView>
+            {/* Product images */}
+            <ProductImages images={values.images} />
 
-        <ThemedView style={{ marginHorizontal: 10 }}>
-          <ThemedButtomGroup
-            options={["XS", "S", "M", "L", "XL", "XXL"]}
-            selectedOption={product.sizes}
-            onSelect={(option) => console.log({ option })}
-          />
+            <ThemedView style={{ marginHorizontal: 10, marginTop: 20 }}>
+              <ThemedTextInput
+                placeholder="Titulo"
+                style={{ marginVertical: 5 }}
+                value={values.title}
+                onChangeText={handleChange("title")}
+              />
+              <ThemedTextInput
+                placeholder="Slug"
+                style={{ marginVertical: 5 }}
+                value={values.slug}
+                onChangeText={handleChange("slug")}
+              />
+              <ThemedTextInput
+                placeholder="Descripcion"
+                multiline
+                numberOfLines={5}
+                style={{ marginVertical: 5 }}
+                value={values.description}
+                onChangeText={handleChange("description")}
+              />
+            </ThemedView>
 
-          <ThemedButtomGroup
-            options={["kid", "men", "women", "unisex"]}
-            selectedOption={[product.gender]}
-            onSelect={(option) => console.log({ option })}
-          />
-        </ThemedView>
+            <ThemedView
+              style={{
+                marginHorizontal: 10,
+                marginVertical: 5,
+                flexDirection: "row",
+                gap: 10,
+              }}
+            >
+              <ThemedTextInput
+                placeholder="Precio"
+                style={{ flex: 1 }}
+                value={values.price.toString()}
+                onChangeText={handleChange("price")}
+              />
+              <ThemedTextInput
+                placeholder="Inventario"
+                style={{ flex: 1 }}
+                value={values.stock.toString()}
+                onChangeText={handleChange("stock")}
+              />
+            </ThemedView>
 
-        <View style={{ marginHorizontal: 10, marginBottom: 50, marginTop: 20 }}>
-          <ThemedButton
-            icon="save-outline"
-            onPress={() => console.log("guardar")}
-          >
-            Guardar
-          </ThemedButton>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <ThemedView style={{ marginHorizontal: 10 }}>
+              <ThemedButtomGroup
+                options={["XS", "S", "M", "L", "XL", "XXL"]}
+                selectedOption={values.sizes}
+                onSelect={(selectedSize) => {
+                  const newSizeValue = values.sizes.includes(
+                    selectedSize as Size,
+                  )
+                    ? values.sizes.filter((size) => size !== selectedSize)
+                    : [...values.sizes, selectedSize];
+                  setFieldValue("sizes", newSizeValue);
+                }}
+              />
+
+              <ThemedButtomGroup
+                options={["kid", "men", "women", "unisex"]}
+                selectedOption={[values.gender]}
+                onSelect={(SelectedOption) =>
+                  setFieldValue("gender", SelectedOption)
+                }
+              />
+            </ThemedView>
+
+            <View
+              style={{ marginHorizontal: 10, marginBottom: 50, marginTop: 20 }}
+            >
+              <ThemedButton
+                icon="save-outline"
+                onPress={() => console.log("guardar")}
+              >
+                Guardar
+              </ThemedButton>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
+    </Formik>
   );
 };
 
