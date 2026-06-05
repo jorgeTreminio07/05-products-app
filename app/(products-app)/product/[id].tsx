@@ -18,7 +18,7 @@ const ProductScreen = () => {
   const navigation = useNavigation();
   const backgroundColor = useThemeColor({}, "background");
 
-  const { productQuery } = useProduct(`${id}`);
+  const { productQuery, productMutation } = useProduct(`${id}`);
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -61,7 +61,7 @@ const ProductScreen = () => {
   return (
     <Formik
       initialValues={product}
-      onSubmit={(productLike) => console.log({ productLike })}
+      onSubmit={(productLike) => productMutation.mutate(productLike)}
     >
       {({ values, handleSubmit, handleChange, setFieldValue }) => (
         <KeyboardAvoidingView
@@ -143,10 +143,7 @@ const ProductScreen = () => {
             <View
               style={{ marginHorizontal: 10, marginBottom: 50, marginTop: 20 }}
             >
-              <ThemedButton
-                icon="save-outline"
-                onPress={() => console.log("guardar")}
-              >
+              <ThemedButton icon="save-outline" onPress={() => handleSubmit()}>
                 Guardar
               </ThemedButton>
             </View>
